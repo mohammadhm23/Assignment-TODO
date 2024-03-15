@@ -31,6 +31,9 @@ if (mysqli_num_rows($result) > 0) {
     // User found, return success response
     $response = array('success' => true);
     echo json_encode($response);
+    session_start();
+    $_SESSION['username'] = $username; // Assuming $username holds the logged-in username
+
 } else {
     // User not found, return error response
     $response = array('success' => false);

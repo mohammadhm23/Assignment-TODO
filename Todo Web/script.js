@@ -1,6 +1,4 @@
-
-let todos = JSON.parse(localStorage.getItem('todos')) || [];
-
+let todos = [];
 
 function renderTodos() {
     const todoList = document.getElementById('todoList');
@@ -8,66 +6,38 @@ function renderTodos() {
     todos.forEach((todo, index) => {
         const li = document.createElement('li');
         li.textContent = todo.text;
+
+        // Create delete button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.addEventListener('click', () => {
+            deleteTodo(index);
+        });
+        li.appendChild(deleteBtn);
+
+        // Create edit button
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'Edit';
+        editBtn.addEventListener('click', () => {
+            editTodo(index);
+        });
+        li.appendChild(editBtn);
+
         if (todo.completed) {
             li.classList.add('completed');
         }
-        li.addEventListener('click', () => {
-            toggleCompleted(index);
-        });
         todoList.appendChild(li);
     });
 }
 
-
 function addTodo() {
-    const todoInput = document.getElementById('todoInput');
-    const text = todoInput.value.trim();
-    if (text !== '') {
-        todos.push({ text, completed: false });
-        renderTodos();
-        todoInput.value = '';
-        saveTodos();
-    }
-}
-
-
-function toggleCompleted(index) {
-    todos[index].completed = !todos[index].completed;
-    renderTodos();
-    saveTodos();
-}
-
-
-function saveTodos() {
-    localStorage.setItem('todos', JSON.stringify(todos));
-}
-
-
-window.onload = function() {
-    renderTodos();
-};
-
-
-
-/*function login() {
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
-    if (username === 'AdminSEF123' && password === 'SeF@ctORy$$456') {
-        window.location.href = 'index.html';
-    } else {
-        alert('Wrong username or password');
-    }
-}*/
-
-function login() {
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
+    const todoInput = document.getElementById('todoInput').value.trim();
     const data = {
-        username: username,
-        password: password
+        text: todoInput,
+        username: getUsername()
     };
 
-    fetch('login.php', {
+    fetch('todos.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -77,9 +47,9 @@ function login() {
     .then(response => response.json())
     .then(result => {
         if (result.success) {
-            window.location.href = 'index.html';
+            fetchTodos(); // Fetch updated todos after adding
         } else {
-            alert('Wrong username or password');
+            alert('Failed to add todo');
         }
     })
     .catch(error => {
@@ -87,3 +57,68 @@ function login() {
     });
 }
 
+function deleteTodo(index) {
+    const todoId = todos[index].id;
+    fetch(`todos.php?id=${todoId}`, {
+        method: 'DELETE',
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            fetchTodos(); // Fetch updated todos after deleting
+        } else {
+            alert('Failed to delete todo');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function editTodo(index) {
+    const newText = prompt('Enter new todo text:');
+    if (newText !== null && newText.trim() !== '') {
+        const todoId = todos[index].id;
+        const data = {
+            text: newText.trim()
+        };
+        fetch(`todos.php?id=${todoId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                fetchTodos(); // Fetch updated todos after editing
+            } else {
+                alert('Failed to edit todo');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+}
+
+function fetchTodos() {
+    fetch('todos.php')
+    .then(response => response.json())
+    .then(data => {
+        todos = data;
+        renderTodos();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function getUsername() {
+    return '<?php echo isset($_SESSION["username"]) ? $_SESSION["username"] : "" ?>';
+}
+
+window.onload = function() {
+    fetchTodos();
+};
