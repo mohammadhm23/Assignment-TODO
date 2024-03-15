@@ -37,7 +37,7 @@ function addTodo() {
         username: getUsername()
     };
 
-    fetch('todos.php', {
+    fetch('Back/todos.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -47,7 +47,7 @@ function addTodo() {
     .then(response => response.json())
     .then(result => {
         if (result.success) {
-            fetchTodos(); // Fetch updated todos after adding
+            fetchTodos(); 
         } else {
             alert('Failed to add todo');
         }
@@ -59,13 +59,13 @@ function addTodo() {
 
 function deleteTodo(index) {
     const todoId = todos[index].id;
-    fetch(`todos.php?id=${todoId}`, {
+    fetch(`Back/todos.php?id=${todoId}`, {
         method: 'DELETE',
     })
     .then(response => response.json())
     .then(result => {
         if (result.success) {
-            fetchTodos(); // Fetch updated todos after deleting
+            fetchTodos(); 
         } else {
             alert('Failed to delete todo');
         }
@@ -82,7 +82,7 @@ function editTodo(index) {
         const data = {
             text: newText.trim()
         };
-        fetch(`todos.php?id=${todoId}`, {
+        fetch(`Back/todos.php?id=${todoId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -92,7 +92,7 @@ function editTodo(index) {
         .then(response => response.json())
         .then(result => {
             if (result.success) {
-                fetchTodos(); // Fetch updated todos after editing
+                fetchTodos(); 
             } else {
                 alert('Failed to edit todo');
             }
@@ -104,7 +104,7 @@ function editTodo(index) {
 }
 
 function fetchTodos() {
-    fetch('todos.php')
+    fetch('Back/todos.php')
     .then(response => response.json())
     .then(data => {
         todos = data;
